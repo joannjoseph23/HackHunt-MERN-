@@ -1,0 +1,27 @@
+{
+  "name": "072",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "lint": "echo 'No linter yet' && exit 0",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joannjoseph23/hackhunt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joannjoseph23/hackhunt/issues"
+  },
+  "homepage": "https://github.com/joannjoseph23/hackhunt#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
