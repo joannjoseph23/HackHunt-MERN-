@@ -13,32 +13,43 @@
 <body>
 
   <h1>HackHunt Hackathons</h1>
+  <input type="text" id="search" placeholder="Search by name..." oninput="fetchHackathons()" />
+  <input type="date" id="filter-date" onchange="fetchHackathons()" />
+
   <div id="hackathon-list"></div>
 
   <script>
-    const BACKEND_URL = 'http://localhost:3000'; // change to Render/Railway URL if deployed
+    const BACKEND_URL = 'https://your-service-name.onrender.com';
+
 
     async function fetchHackathons() {
-      const res = await fetch(`${BACKEND_URL}/api/hackathons`);
-      const data = await res.json();
+  const res = await fetch(`${BACKEND_URL}/api/hackathons`);
+  const data = await res.json();
 
-      const list = document.getElementById('hackathon-list');
-      list.innerHTML = '';
+  const searchTerm = document.getElementById('search').value.toLowerCase();
+  const filterDate = document.getElementById('filter-date').value;
 
-      data.forEach(h => {
-        const div = document.createElement('div');
-        div.className = 'hackathon';
-        div.innerHTML = `
-          <strong>${h.name}</strong><br>
-          Date: ${h.date}<br>
-          <a href="${h.registrationLink}" target="_blank">Register</a><br>
-          <label>Reminder Time: <input type="datetime-local" id="reminder-${h.id}" /></label><br>
-          <button onclick="setReminder('${h.id}')">Set Reminder</button>
-          <div id="result-${h.id}"></div>
-        `;
-        list.appendChild(div);
-      });
-    }
+  const list = document.getElementById('hackathon-list');
+  list.innerHTML = '';
+
+  data
+    .filter(h => h.name.toLowerCase().includes(searchTerm))
+    .filter(h => !filterDate || h.date === filterDate)
+    .forEach(h => {
+      const div = document.createElement('div');
+      div.className = 'hackathon';
+      div.innerHTML = `
+        <strong>${h.name}</strong><br>
+        Date: ${h.date}<br>
+        <a href="${h.registrationLink}" target="_blank">Register</a><br>
+        <label>Reminder Time: <input type="datetime-local" id="reminder-${h.id}" /></label><br>
+        <button onclick="setReminder('${h.id}')">Set Reminder</button>
+        <div id="result-${h.id}"></div>
+      `;
+      list.appendChild(div);
+    });
+}
+
 
     async function setReminder(hackathonId) {
       const input = document.getElementById(`reminder-${hackathonId}`);

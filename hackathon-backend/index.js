@@ -1,45 +1,42 @@
 const express = require('express');
-const cors = require('cors');  // ✅ Import CORS
+const cors = require('cors');
+const hackathons = require('./hackathons');
+
 const app = express();
-
-app.use(cors());               // ✅ Enable CORS
-app.use(express.json()); 
-
-// Simple welcome route
-app.get('/', (req, res) => {
-  res.send('Welcome to Hackathon Backend!');
-});
-// Sample hackathon data
-const hackathons = [
-  { id: 1, name: "Hackathon A", date: "2025-06-15", registrationLink: "https://collegeA.edu/register" },
-  { id: 2, name: "Hackathon B", date: "2025-07-01", registrationLink: "https://collegeB.edu/register" }
-];
-
-app.get('/api/hackathons', (req, res) => {
-  res.json(hackathons);
-});
-
-// Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-const reminders = [];
 
+app.use(cors());
+app.use(express.json());
+
+// GET: List of Hackathons
+app.get('/api/hackathons', (req, res) => {
+  const result = hackathons.map(h => ({
+    id: h.id,
+    name: h.name,
+    date: h.date,
+    registrationLink: h.link
+  }));
+  res.json(result);
+});
+
+// POST: Set Reminder (simulated)
 app.post('/api/reminders', (req, res) => {
   const { userId, hackathonId, reminderTime } = req.body;
+
   if (!userId || !hackathonId || !reminderTime) {
-    return res.status(400).json({ error: "Missing fields in request body" });
+    return res.status(400).json({ message: 'Missing fields' });
   }
-  const reminder = { id: reminders.length + 1, userId, hackathonId, reminderTime };
-  reminders.push(reminder);
-  res.status(201).json(reminder);
+
+  // In a real app, you'd store this in a DB or scheduler
+  console.log(`Reminder set for user ${userId} on hackathon ${hackathonId} at ${reminderTime}`);
+  res.status(200).json({ message: 'Reminder set successfully' });
 });
-app.get('/api/hackathons/:id', (req, res) => {
-  const hackathon = hackathons.find(h => h.id === parseInt(req.params.id));
-  if (!hackathon) return res.status(404).json({ error: "Hackathon not found" });
-  res.json(hackathon);
+
+// Default fallback
+app.get('/', (req, res) => {
+  res.send('HackHunt Backend is Running');
 });
-app.get('/api/reminders', (req, res) => {
-  res.json(reminders);
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
