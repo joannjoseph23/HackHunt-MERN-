@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HackHunt Frontend</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; }
+    .hackathon { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    input, button { margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <h1>HackHunt Hackathons</h1>
+  <div id="hackathon-list"></div>
+
+  <script>
+    const BACKEND_URL = 'http://localhost:3000'; // change to Render/Railway URL if deployed
+
+    async function fetchHackathons() {
+      const res = await fetch(`${BACKEND_URL}/api/hackathons`);
+      const data = await res.json();
+
+      const list = document.getElementById('hackathon-list');
+      list.innerHTML = '';
+
+      data.forEach(h => {
+        const div = document.createElement('div');
+        div.className = 'hackathon';
+        div.innerHTML = `
+          <strong>${h.name}</strong><br>
+          Date: ${h.date}<br>
+          <a href="${h.registrationLink}" target="_blank">Register</a><br>
+          <label>Reminder Time: <input type="datetime-local" id="reminder-${h.id}" /></label><br>
+          <button onclick="setReminder('${h.id}')">Set Reminder</button>
+          <div id="result-${h.id}"></div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    async function setReminder(hackathonId) {
+      const input = document.getElementById(`reminder-${hackathonId}`);
+      const time = input.value;
+      const result = document.getElementById(`result-${hackathonId}`);
+
+      if (!time) {
+        result.textContent = 'Please enter a reminder time.';
+        return;
+      }
+
+      const res = await fetch(`${BACKEND_URL}/api/reminders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 'demo-user',
+          hackathonId: parseInt(hackathonId),
+          reminderTime: new Date(time).toISOString()
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        result.textContent = 'Reminder set!';
+      } else {
+        result.textContent = 'Failed to set reminder.';
+      }
+    }
+
+    fetchHackathons();
+  </script>
+
+</body>
+</html>

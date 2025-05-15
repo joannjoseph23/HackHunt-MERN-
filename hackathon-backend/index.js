@@ -1,7 +1,9 @@
 const express = require('express');
+const cors = require('cors');  // ✅ Import CORS
 const app = express();
 
-app.use(express.json()); // for parsing JSON request bodies
+app.use(cors());               // ✅ Enable CORS
+app.use(express.json()); 
 
 // Simple welcome route
 app.get('/', (req, res) => {
