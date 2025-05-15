@@ -16,6 +16,7 @@ app.get('/api/hackathons', (req, res) => {
     id: h.id,
     name: h.name,
     date: h.date,
+    location: h.location,
     registrationLink: h.link
   }));
   res.json(result);
