@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -19,7 +19,9 @@ jobs:
         node-version: 18
 
     - name: Install dependencies
+      working-directory: hackathon-backend
       run: npm install
 
-    - name: Run dummy test
+    - name: Run tests
+      working-directory: hackathon-backend
       run: npm test
