@@ -73,7 +73,8 @@
 <body>
 
   <h1>HackHunt Hackathons</h1>
-  
+  <div id="Welcome"></div>
+
   <div id="filters">
     <input type="text" id="search" placeholder="Search by name..." oninput="fetchHackathons()" />
     <input type="date" id="filter-date" onchange="fetchHackathons()" />
@@ -93,6 +94,13 @@
   </div>
 
   <script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById('welcome').innerHTML = `<p>Welcome, <strong>${user.name}</strong>!</p>`;
+    }
+
     const BACKEND_URL = 'https://hackhunt.onrender.com';
 
     async function fetchHackathons() {
