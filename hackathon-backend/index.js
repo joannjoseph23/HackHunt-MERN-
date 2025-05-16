@@ -41,6 +41,22 @@ app.get('/api/hackathons/:id', async (req, res) => {
   }
 });
 
+app.post('/api/hackathons', async (req, res) => {
+  try {
+    const { name, date, location, link } = req.body;
+    if (!name || !date || !location || !link) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const newHackathon = new Hackathon({ name, date, location, link });
+    await newHackathon.save();
+
+    res.status(201).json(newHackathon);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error while adding hackathon' });
+  }
+});
+
 
 // GET: All reminders (mock)
 app.get('/api/reminders', (req, res) => {
