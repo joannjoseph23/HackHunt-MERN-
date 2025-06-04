@@ -2,30 +2,25 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [main, master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v3
 
-      - name: 🔧 Set up Node.js
+      - name: 🟢 Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
 
       - name: 📦 Install dependencies
         run: npm install
+        working-directory: ./hackhunt-frontend
 
-      - name: 🏗 Build the project
+      - name: 🔨 Build the project
         run: npm run build
-
-      # Optional: Add test command if you have tests
-      # - name: 🧪 Run tests
-      #   run: npm test
+        working-directory: ./hackhunt-frontend
