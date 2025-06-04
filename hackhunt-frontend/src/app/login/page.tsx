@@ -22,8 +22,10 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      alert('Login successful!');
-      router.push('/dashboard');
+      const data = await res.json();
+localStorage.setItem('hackhuntUserEmail', email);
+alert('Login successful!');
+router.push('/dashboard');
     } else {
       const data = await res.json();
       alert(`Login failed: ${data.message}`);

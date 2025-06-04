@@ -20,8 +20,10 @@ export default function SignupPage() {
   });
 
   if (res.ok) {
-    alert('Signup successful!');
-    router.push('/dashboard');
+localStorage.setItem('hackhuntUserEmail', email);
+alert('Signup successful!');
+router.push('/dashboard');
+
   } else {
     const { message } = await res.json();
     alert(`Signup failed: ${message}`);

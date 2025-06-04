@@ -2,18 +2,20 @@ import { ObjectId } from 'mongodb';
 import { NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  context: { params: { id: string } }
+) {
   try {
+    const id = context.params.id; // ✅ Proper async-safe access
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('hackhunt');
 
-    // Get the hackathon's name & url from `hackathons` collection using ID
-    const base = await db.collection('hackathons').findOne({ _id: new ObjectId(params.id) });
+    const base = await db.collection('hackathons').findOne({ _id: new ObjectId(id) });
     if (!base) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const { name, url } = base;
+    const { url } = base;
 
-    // Now fetch from the 3 other collections by matching name or url
     const [overview, prizes, speakers, schedule] = await Promise.all([
       db.collection('hackathonoverviews').findOne({ url }),
       db.collection('hackathonprizes').findOne({ url }),
@@ -29,7 +31,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       schedule: schedule?.schedule || [],
     });
   } catch (err) {
-    console.error(err);
+    console.error('❌ API Error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

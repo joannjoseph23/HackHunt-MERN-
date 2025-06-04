@@ -1,23 +1,31 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
   const router = useRouter();
-  const username = 'User'; // Replace with actual user info later
+  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('hackhuntUserEmail');
+    setEmail(storedEmail);
+    setIsAdmin(storedEmail === 'admin@hackhunt.com');
+  }, []);
+
+  const username = email?.split('@')[0] || 'User';
 
   return (
     <main style={styles.main}>
-      {/* ✅ Faded background overlay */}
       <div style={styles.bgOverlay}></div>
 
-      {/* ✅ Foreground content */}
       <div style={styles.container}>
         <h2 style={styles.welcome}>Welcome, {username} 👋</h2>
         <p style={styles.greeting}>What would you like to do today?</p>
 
         <div style={styles.buttonGroup}>
+          {/* DISCOVER is for everyone */}
           <button
             style={{
               ...styles.actionButton,
@@ -26,29 +34,62 @@ export default function DashboardPage() {
             }}
             onMouseEnter={() => setHoveredBtn('discover')}
             onMouseLeave={() => setHoveredBtn(null)}
-            onClick={() => router.push('/discover')}
+            onClick={() => router.push('/dashboard/discover')}
           >
             DISCOVER
           </button>
 
-          <button
-            style={{
-              ...styles.actionButton,
-              ...styles.buildButton,
-              boxShadow: hoveredBtn === 'build' ? '0 0 20px #7EC8E3' : 'none',
-            }}
-            onMouseEnter={() => setHoveredBtn('build')}
-            onMouseLeave={() => setHoveredBtn(null)}
-            onClick={() => router.push('/build')}
-          >
-            BUILD
-          </button>
+          {/* BUILD is for normal users only */}
+          {!isAdmin && (
+            <button
+              style={{
+                ...styles.actionButton,
+                ...styles.buildButton,
+                boxShadow: hoveredBtn === 'build' ? '0 0 20px #7EC8E3' : 'none',
+              }}
+              onMouseEnter={() => setHoveredBtn('build')}
+              onMouseLeave={() => setHoveredBtn(null)}
+              onClick={() => router.push('/dashboard/build/intro')}
+            >
+              BUILD
+            </button>
+          )}
+
+          {/* MANAGE & NOTIFICATIONS only for admin */}
+          {isAdmin && (
+            <>
+              <button
+                style={{
+                  ...styles.actionButton,
+                  backgroundImage: "url('/images/manage.png')",
+                  boxShadow: hoveredBtn === 'manage' ? '0 0 20px #7EC8E3' : 'none',
+                }}
+                onMouseEnter={() => setHoveredBtn('manage')}
+                onMouseLeave={() => setHoveredBtn(null)}
+                onClick={() => router.push('/admin/manage')}
+              >
+                MANAGE
+              </button>
+
+              <button
+                style={{
+                  ...styles.actionButton,
+                  backgroundImage: "url('/images/notify.png')",
+                  boxShadow: hoveredBtn === 'notify' ? '0 0 20px #7EC8E3' : 'none',
+                }}
+                onMouseEnter={() => setHoveredBtn('notify')}
+                onMouseLeave={() => setHoveredBtn(null)}
+                onClick={() => router.push('/admin/notifications')}
+              >
+                NOTIFICATIONS
+              </button>
+            </>
+          )}
         </div>
       </div>
     </main>
   );
 }
-
 
 const styles = {
   main: {
@@ -70,16 +111,16 @@ const styles = {
     left: 0,
     width: '100%',
     height: '100%',
-    backgroundImage: "url('/images/dashboard BG.webp')", // ✅ Your faded background
+    backgroundImage: "url('/images/dashboard BG.webp')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    opacity: 0.1, // ✅ Subtle fade
+    opacity: 0.1,
     zIndex: 0,
   },
   container: {
     maxWidth: '800px',
     width: '100%',
-    zIndex: 1, // ✅ Keep content above overlay
+    zIndex: 1,
   },
   welcome: {
     fontSize: '2.5rem',
