@@ -1,3 +1,5 @@
+// src/app/api/hackathon/[id]/route.ts
+
 import { ObjectId } from 'mongodb';
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
@@ -6,8 +8,9 @@ export async function GET(
   req: NextRequest,
   context: { params: { id: string } }
 ) {
+  const { id } = context.params;
+
   try {
-    const id = context.params.id;
     const client = await clientPromise;
     const db = client.db('hackhunt');
 
