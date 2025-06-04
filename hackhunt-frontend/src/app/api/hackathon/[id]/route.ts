@@ -4,10 +4,10 @@ import clientPromise from '../../../../../lib/mongodb';
 
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id; // ✅ Proper async-safe access
+    const id = params.id;
     const client = await clientPromise;
     const db = client.db('hackhunt');
 
