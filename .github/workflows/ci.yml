@@ -17,6 +17,9 @@ jobs:
         with:
           node-version: '18'
 
+      - name: 📁 Create .env.local
+        run: echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > hackhunt-frontend/.env.local
+
       - name: 📦 Install dependencies
         run: npm install
         working-directory: ./hackhunt-frontend
