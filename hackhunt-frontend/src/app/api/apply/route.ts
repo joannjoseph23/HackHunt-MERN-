@@ -1,8 +1,11 @@
+import { incrementRequestCount } from '@/lib/metrics';
 import { ObjectId } from 'mongodb';
 import { NextResponse } from 'next/server';
 import clientPromise from '../../../../lib/mongodb'; // Adjust path as needed
 
 export async function POST(req: Request) {
+  incrementRequestCount('POST');
+
   try {
     const body = await req.json();
     const {

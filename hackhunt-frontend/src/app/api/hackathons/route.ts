@@ -1,8 +1,10 @@
 // hackhunt-frontend/src/app/api/hackathons/route.ts
+import { incrementRequestCount } from '@/lib/metrics';
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../lib/mongodb';
 
 export async function GET() {
+  incrementRequestCount('GET');
   try {
     const client = await clientPromise;
     const db = client.db('hackhunt');
