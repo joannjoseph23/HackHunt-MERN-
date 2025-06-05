@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
-          path: ./hackhunt-frontend/coverage/
+          path: coverage/
 
   build:
     name: 🛠️ Build
