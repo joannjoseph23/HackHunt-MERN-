@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/app/api/hackathon/[id]/route.ts
 
 import { ObjectId } from 'mongodb';

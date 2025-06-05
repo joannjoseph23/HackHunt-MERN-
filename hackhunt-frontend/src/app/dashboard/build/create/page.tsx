@@ -80,35 +80,83 @@ const tempSummary = {
     setSchedule([...schedule, { date: '', time: '', title: '' }]);
   };
 
-  const handleSubmit = async () => {
-    try {
-      const overview = {
+const handleSubmit = async () => {
+  try {
+    const isAdmin = localStorage.getItem('hackhuntUserEmail') === 'admin@hackhunt.com';
+
+    const base = {
+      name: form.name,
+      image: form.image,
+      url: form.url,
+      date: `STARTS ${form.runsFrom.split('-')[0].trim()}`, // Optional: Format as you prefer
+    };
+
+    const overview = {
+      name: form.name,
+      url: form.url,
+      image: form.image,
+      runsFrom: form.runsFrom,
+      discord: form.discord,
+      twitter: form.twitter,
+      happening: form.happening,
+    };
+
+    const prizes = {
+      name: form.name,
+      url: form.url,
+      organizer: form.organizer,
+      prizePool: form.prizePool,
+    };
+
+    const speakersData = {
+      name: form.name,
+      url: form.url,
+      speakers,
+    };
+
+    const scheduleData = {
+      name: form.name,
+      url: form.url,
+      schedule,
+    };
+
+    if (isAdmin) {
+      // Admin => Directly to main collections
+      await Promise.all([
+        fetch('/api/hackathons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(base),
+        }),
+        fetch('/api/hackathonoverviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(overview),
+        }),
+        fetch('/api/hackathonprizes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prizes),
+        }),
+        fetch('/api/hackathonspeakers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(speakersData),
+        }),
+        fetch('/api/hackathonschedules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(scheduleData),
+        }),
+      ]);
+      alert('Hackathon created successfully!');
+    } else {
+      // Normal user => Temporary collections
+      const tempSummary = {
         name: form.name,
-        url: form.url,
-        image: form.image,
         runsFrom: form.runsFrom,
-        discord: form.discord,
-        twitter: form.twitter,
-        happening: form.happening,
-      };
-
-      const prizes = {
-        name: form.name,
+        image: form.image,
         url: form.url,
-        organizer: form.organizer,
-        prizePool: form.prizePool,
-      };
-
-      const speakersData = {
-        name: form.name,
-        url: form.url,
-        speakers,
-      };
-
-      const scheduleData = {
-        name: form.name,
-        url: form.url,
-        schedule,
       };
 
       await Promise.all([
@@ -133,19 +181,21 @@ const tempSummary = {
           body: JSON.stringify(scheduleData),
         }),
         fetch('/api/create/temp', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tempSummary),
-  }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tempSummary),
+        }),
       ]);
-
-      alert('Request successfully sent to admin. Please wait for approval to create your hackathon.');
-      resetForm();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to create hackathon');
+      alert('Request successfully sent to admin. Please wait for approval.');
     }
-  };
+
+    resetForm();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to submit hackathon data');
+  }
+};
+
 
   const inputStyle = {
     marginBottom: '1rem',
