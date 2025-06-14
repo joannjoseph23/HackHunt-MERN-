@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'hackhunt-app'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['hackhunt-mern.onrender.com']
+    scheme: https

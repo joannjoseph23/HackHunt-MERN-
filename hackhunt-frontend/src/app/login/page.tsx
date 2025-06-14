@@ -1,14 +1,16 @@
 'use client';
+import * as Sentry from '@sentry/nextjs'; // ✅ Sentry import
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
 import { useState } from 'react';
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [hover, setHover] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -23,66 +25,45 @@ export default function LoginPage() {
 
     if (res.ok) {
       const data = await res.json();
-localStorage.setItem('hackhuntUserEmail', email);
-alert('Login successful!');
-router.push('/dashboard');
+      localStorage.setItem('hackhuntUserEmail', email);
+      alert('Login successful!');
+
+      // ✅ Send test error to Sentry after login
+      Sentry.captureException(new Error('Test Sentry error after successful login'));
+
+      router.push('/dashboard');
     } else {
       const data = await res.json();
       alert(`Login failed: ${data.message}`);
     }
   };
+
   return (
     <main style={styles.main}>
       <div style={styles.grid}>
-        {/* LEFT SIDE: Login Form */}
         <div style={styles.left}>
           <h1 style={styles.header}>Log in to HackHunt</h1>
-
           <form style={styles.form} onSubmit={handleSubmit}>
             <label style={styles.label} htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              style={styles.input}
-              placeholder="Enter your email"
-              required
-            />
+            <input type="email" id="email" style={styles.input} placeholder="Enter your email" required />
 
             <label style={styles.label} htmlFor="password">Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              style={styles.input}
-              placeholder="Enter your password"
-              required
-            />
+            <input type={showPassword ? 'text' : 'password'} id="password" style={styles.input} placeholder="Enter your password" required />
 
             <div style={styles.toggleRow}>
               <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={showPassword}
-                  onChange={() => setShowPassword(!showPassword)}
-                />
+                <input type="checkbox" checked={showPassword} onChange={() => setShowPassword(!showPassword)} />
                 Show Password
               </label>
-
               <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
-                />
+                <input type="checkbox" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />
                 Remember Me
               </label>
             </div>
 
             <button
               type="submit"
-              style={{
-                ...styles.loginButton,
-                boxShadow: hover ? '0 0 12px #7EC8E3' : 'none',
-              }}
+              style={{ ...styles.loginButton, boxShadow: hover ? '0 0 12px #7EC8E3' : 'none' }}
               onMouseEnter={() => setHover(true)}
               onMouseLeave={() => setHover(false)}
             >
@@ -93,23 +74,16 @@ router.push('/dashboard');
           <div style={styles.buttonRow}>
             <Link href="/forgot-password">
               <button
-                style={{
-                  ...styles.linkButton,
-                  boxShadow: hoveredLink === 'forgot' ? '0 0 12px #7EC8E3' : 'none',
-                }}
+                style={{ ...styles.linkButton, boxShadow: hoveredLink === 'forgot' ? '0 0 12px #7EC8E3' : 'none' }}
                 onMouseEnter={() => setHoveredLink('forgot')}
                 onMouseLeave={() => setHoveredLink(null)}
               >
                 Forgot Password
               </button>
             </Link>
-
             <Link href="/signup">
               <button
-                style={{
-                  ...styles.linkButton,
-                  boxShadow: hoveredLink === 'signup' ? '0 0 12px #7EC8E3' : 'none',
-                }}
+                style={{ ...styles.linkButton, boxShadow: hoveredLink === 'signup' ? '0 0 12px #7EC8E3' : 'none' }}
                 onMouseEnter={() => setHoveredLink('signup')}
                 onMouseLeave={() => setHoveredLink(null)}
               >
@@ -117,9 +91,7 @@ router.push('/dashboard');
               </button>
             </Link>
           </div>
-        </div> {/* ✅ Properly closed styles.left */}
-
-        {/* RIGHT SIDE: Logo */}
+        </div>
         <div style={styles.right}>
           <img src="/logo.png" alt="HackHunt Logo" style={styles.logoImage} />
         </div>

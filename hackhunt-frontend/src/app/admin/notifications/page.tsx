@@ -92,6 +92,28 @@ export default function AdminNotifications() {
   }
 };
 
+const handleReject = async () => {
+  if (!activeHackathon) return;
+
+  const encodedUrl = encodeURIComponent(activeHackathon.base.url);
+
+  try {
+    await Promise.all([
+      fetch(`/api/tempdata/hackathon_temp/${encodedUrl}`, { method: 'DELETE' }),
+      fetch(`/api/tempdata/hackathon_overviews/${encodedUrl}`, { method: 'DELETE' }),
+      fetch(`/api/tempdata/hackathon_prizes/${encodedUrl}`, { method: 'DELETE' }),
+      fetch(`/api/tempdata/hackathon_speakers/${encodedUrl}`, { method: 'DELETE' }),
+      fetch(`/api/tempdata/hackathon_schedules/${encodedUrl}`, { method: 'DELETE' }),
+    ]);
+
+    alert('Hackathon Rejected ❌');
+    setPendingList((prev) => prev.filter((h) => h.url !== activeHackathon.base.url));
+    setActiveHackathon(null);
+  } catch (err) {
+    console.error('Error rejecting hackathon:', err);
+    alert('Failed to reject hackathon ❌');
+  }
+};
 
   if (activeHackathon) {
     const tabs = ['overview', 'prizes', ...(activeHackathon.speakers?.length ? ['speakers'] : []), 'schedule'];
@@ -149,21 +171,38 @@ export default function AdminNotifications() {
               <p><strong>Twitter:</strong> <a href={activeHackathon.overview.twitter}>{activeHackathon.overview.twitter}</a></p>
               <p><strong>Discord:</strong> <a href={activeHackathon.overview.discord}>{activeHackathon.overview.discord}</a></p>
 
-              <button
-                onClick={handleAccept}
-                style={{
-                  marginTop: '2rem',
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#7EC8E3',
-                  color: '#0D1B2A',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
-                }}
-              >
-                ✅ Accept Hackathon
-              </button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+  <button
+    onClick={handleAccept}
+    style={{
+      padding: '0.75rem 1.5rem',
+      backgroundColor: '#7EC8E3',
+      color: '#0D1B2A',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontWeight: 'bold'
+    }}
+  >
+    ✅ Accept Hackathon
+  </button>
+
+  <button
+    onClick={handleReject}
+    style={{
+      padding: '0.75rem 1.5rem',
+      backgroundColor: '#E74C3C',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontWeight: 'bold'
+    }}
+  >
+    ❌ Reject Hackathon
+  </button>
+</div>
+
             </div>
           )}
 

@@ -1,6 +1,4 @@
-function isValidURL(url: string): boolean {
-  return /^https?:\/\/.+\..+/.test(url);
-}
+import { isValidURL } from '../../utils/validate';
 
 describe('Hackathon URL validation', () => {
   it('accepts valid URLs', () => {

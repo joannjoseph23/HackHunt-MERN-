@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '../../../../lib/mongodb';
+import { incrementRequestCount } from '@/lib/metrics';
 
 export async function POST(req: Request) {
+  incrementRequestCount('POST');
+
   try {
     const { email, password } = await req.json();
 

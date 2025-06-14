@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./hackhunt-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./hackhunt-frontend:/app
+    environment:
+      - MONGO_URI=${MONGO_URI}
+    env_file:
+      - ./hackhunt-frontend/.env.local
+    networks:
+      - hackhunt-net
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - hackhunt-net
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "4000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    networks:
+      - hackhunt-net
+
+networks:
+  hackhunt-net:
+    driver: bridge
