@@ -2,6 +2,7 @@
 import HackathonCard from '@/components/HackathonCard';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { logToSentry } from '../../../../utils/sentryLogger';
 
 type Hackathon = {
   _id: string;
@@ -16,15 +17,22 @@ export default function ManagePage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/hackathons')
-      .then(res => res.json())
-      .then(data => setHackathons(data));
-  }, []);
+  fetch('/api/hackathons')
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch hackathons");
+      return res.json();
+    })
+    .then(data => setHackathons(data))
+    .catch(err => {
+      logToSentry("Failed to fetch hackathons", "error", { error: err.message });
+    });
+}, []);
 
   const handleDelete = async (url: string) => {
     if (!confirm('Are you sure you want to delete this hackathon?')) return;
 
-    try {
+    try {logToSentry("Admin deleted hackathon", "info");
+
       await Promise.all([
         fetch(`/api/admin/delete/hackathons?url=${url}`, { method: 'DELETE' }),
         fetch(`/api/admin/delete/overviews?url=${url}`, { method: 'DELETE' }),

@@ -1,6 +1,7 @@
 'use client';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { logToSentry } from '../../../../../utils/sentryLogger';
 
 export default function EditHackathonPage() {
   const { id } = useParams() as { id: string };
@@ -52,9 +53,13 @@ export default function EditHackathonPage() {
       alert('Changes saved successfully!');
       router.push('/admin/manage');
     } catch (err) {
-      console.error(err);
-      alert('Failed to save changes');
-    }
+  console.error(err);
+  logToSentry('Failed to save hackathon changes', 'error', {
+    hackathonId: id,
+    error: (err as Error).message,
+  });
+  alert('Failed to save changes');
+}
   };
 
   if (loading) return <p style={{ color: '#7EC8E3' }}>Loading...</p>;

@@ -1,5 +1,5 @@
 'use client';
-import * as Sentry from '@sentry/nextjs'; // ✅ Sentry import
+import * as Sentry from '@sentry/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -17,24 +17,44 @@ export default function LoginPage() {
     const email = (e.currentTarget.email as HTMLInputElement).value;
     const password = (e.currentTarget.password as HTMLInputElement).value;
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+    Sentry.captureMessage('User attempted login', {
+      level: 'info',
+      extra: { email },
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem('hackhuntUserEmail', email);
-      alert('Login successful!');
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // ✅ Send test error to Sentry after login
-      Sentry.captureException(new Error('Test Sentry error after successful login'));
-
-      router.push('/dashboard');
-    } else {
       const data = await res.json();
-      alert(`Login failed: ${data.message}`);
+
+      if (res.ok) {
+        localStorage.setItem('hackhuntUserEmail', email);
+        alert('Login successful!');
+
+        Sentry.captureMessage('User logged in', {
+          level: 'info',
+          extra: { email },
+        });
+
+        // You can also link Sentry events to the user:
+        Sentry.setUser({ email });
+
+        router.push('/dashboard');
+      } else {
+        Sentry.captureMessage(`Login failed: ${data.error}`, {
+          level: 'warning',
+          extra: { email },
+        });
+
+        alert(`Login failed: ${data.error}`);
+      }
+    } catch (err) {
+      Sentry.captureException(err);
+      alert('Unexpected error occurred during login.');
     }
   };
 
