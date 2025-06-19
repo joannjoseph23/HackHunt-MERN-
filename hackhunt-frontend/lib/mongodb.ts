@@ -1,15 +1,15 @@
 // lib/mongodb.ts
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.MONGO_URI!;
+const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 const options = {};
+
+if (!uri) {
+  throw new Error('Please add your Mongo URI to environment variables');
+}
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
-
-if (!process.env.MONGO_URI) {
-  throw new Error('Please add your Mongo URI to .env.local');
-}
 
 if (process.env.NODE_ENV === 'development') {
   // In dev mode, use a global variable to preserve the value across hot reloads
@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'development') {
   }
   clientPromise = (global as any)._mongoClientPromise;
 } else {
-  // In production, don’t use global variable
+  // In production, don't use a global variable
   client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
