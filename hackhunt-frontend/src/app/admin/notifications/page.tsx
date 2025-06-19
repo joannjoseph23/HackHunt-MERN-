@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { logToSentry } from '../../../../utils/sentryLogger';
 
 export default function AdminNotifications() {
   const [pendingList, setPendingList] = useState<any[]>([]);
@@ -12,85 +13,99 @@ export default function AdminNotifications() {
   useEffect(() => {
     fetch('/api/tempdata/hackathon_temp')
       .then((res) => res.json())
-      .then((data) => setPendingList(data));
+      .then((data) => setPendingList(data))
+      .catch((err) => {
+        logToSentry('Failed to fetch pending hackathon list', 'error', {
+          error: err.message,
+        });
+      });
   }, []);
 
   const handleDetailsClick = async (hackathon: any) => {
     const encodedUrl = encodeURIComponent(hackathon.url);
+    try {
+      const [overview, prizes, speakersData, scheduleData] = await Promise.all([
+        fetch(`/api/tempdata/hackathon_overviews/${encodedUrl}`).then((res) => res.json()),
+        fetch(`/api/tempdata/hackathon_prizes/${encodedUrl}`).then((res) => res.json()),
+        fetch(`/api/tempdata/hackathon_speakers/${encodedUrl}`).then((res) => res.json()),
+        fetch(`/api/tempdata/hackathon_schedules/${encodedUrl}`).then((res) => res.json()),
+      ]);
 
-    const [overview, prizes, speakersData, scheduleData] = await Promise.all([
-      fetch(`/api/tempdata/hackathon_overviews/${encodedUrl}`).then((res) => res.json()),
-      fetch(`/api/tempdata/hackathon_prizes/${encodedUrl}`).then((res) => res.json()),
-      fetch(`/api/tempdata/hackathon_speakers/${encodedUrl}`).then((res) => res.json()),
-      fetch(`/api/tempdata/hackathon_schedules/${encodedUrl}`).then((res) => res.json()),
-    ]);
+      const speakers = Array.isArray(speakersData?.speakers) ? speakersData.speakers : [];
+      const schedule = Array.isArray(scheduleData?.schedule) ? scheduleData.schedule : [];
 
-    const speakers = Array.isArray(speakersData?.speakers) ? speakersData.speakers : [];
-    const schedule = Array.isArray(scheduleData?.schedule) ? scheduleData.schedule : [];
-
-    setActiveHackathon({
-      base: hackathon,
-      overview,
-      prizes,
-      speakers,
-      schedule,
-    });
+      setActiveHackathon({
+        base: hackathon,
+        overview,
+        prizes,
+        speakers,
+        schedule,
+      });
+    } catch (err) {
+      logToSentry('Failed to fetch hackathon details', 'error', {
+        hackathonUrl: hackathon.url,
+        error: (err as Error).message,
+      });
+    }
   };
 
- const handleAccept = async () => {
-  if (!activeHackathon) return;
+  const handleAccept = async () => {
+    if (!activeHackathon) return;
 
-  const { base, overview, prizes, speakers, schedule } = activeHackathon;
-  const encodedUrl = encodeURIComponent(base.url);
+    const { base, overview, prizes, speakers, schedule } = activeHackathon;
+    const encodedUrl = encodeURIComponent(base.url);
 
-  try {
-    // Step 1: Insert into main collections
-    await Promise.all([
-      fetch('/api/hackathons', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(base),
-      }),
-      fetch('/api/hackathonoverviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(overview),
-      }),
-      fetch('/api/hackathonprizes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(prizes),
-      }),
-      fetch('/api/hackathonspeakers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: base.name, url: base.url, speakers }),
-      }),
-      fetch('/api/hackathonschedules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: base.name, url: base.url, schedule }),
-      }),
-    ]);
+    try {
+      await Promise.all([
+        fetch('/api/hackathons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(base),
+        }),
+        fetch('/api/hackathonoverviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(overview),
+        }),
+        fetch('/api/hackathonprizes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prizes),
+        }),
+        fetch('/api/hackathonspeakers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: base.name, url: base.url, speakers }),
+        }),
+        fetch('/api/hackathonschedules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: base.name, url: base.url, schedule }),
+        }),
+      ]);
 
-    // Step 2: Delete from all temporary collections
-    await Promise.all([
-      fetch(`/api/tempdata/hackathon_temp/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_overviews/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_prizes/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_speakers/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_schedules/${encodedUrl}`, { method: 'DELETE' }),
-    ]);
+      await Promise.all([
+        fetch(`/api/tempdata/hackathon_temp/${encodedUrl}`, { method: 'DELETE' }),
+        fetch(`/api/tempdata/hackathon_overviews/${encodedUrl}`, { method: 'DELETE' }),
+        fetch(`/api/tempdata/hackathon_prizes/${encodedUrl}`, { method: 'DELETE' }),
+        fetch(`/api/tempdata/hackathon_speakers/${encodedUrl}`, { method: 'DELETE' }),
+        fetch(`/api/tempdata/hackathon_schedules/${encodedUrl}`, { method: 'DELETE' }),
+      ]);
 
-    // Step 3: UI updates
-    alert('Hackathon Accepted ✅');
-    setPendingList((prev) => prev.filter((h) => h.url !== base.url));
-    setActiveHackathon(null);
-  } catch (err) {
-    console.error('Error accepting hackathon:', err);
-    alert('Failed to accept hackathon ❌');
-  }
-};
+      logToSentry('Hackathon accepted by admin', 'info', { hackathonUrl: base.url });
+
+      alert('Hackathon Accepted ✅');
+      setPendingList((prev) => prev.filter((h) => h.url !== base.url));
+      setActiveHackathon(null);
+    } catch (err) {
+      console.error('Error accepting hackathon:', err);
+      logToSentry('Error accepting hackathon', 'error', {
+        hackathonUrl: base.url,
+        error: (err as Error).message,
+      });
+      alert('Failed to accept hackathon ❌');
+    }
+  };
 
 const handleReject = async () => {
   if (!activeHackathon) return;
@@ -98,22 +113,27 @@ const handleReject = async () => {
   const encodedUrl = encodeURIComponent(activeHackathon.base.url);
 
   try {
-    await Promise.all([
-      fetch(`/api/tempdata/hackathon_temp/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_overviews/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_prizes/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_speakers/${encodedUrl}`, { method: 'DELETE' }),
-      fetch(`/api/tempdata/hackathon_schedules/${encodedUrl}`, { method: 'DELETE' }),
-    ]);
+    await fetch(`/api/admin/delete/hackathon_request?url=${encodedUrl}`, {
+      method: 'DELETE',
+    });
+
+    logToSentry('Hackathon rejected by admin', 'info', {
+      hackathonUrl: activeHackathon.base.url,
+    });
 
     alert('Hackathon Rejected ❌');
     setPendingList((prev) => prev.filter((h) => h.url !== activeHackathon.base.url));
     setActiveHackathon(null);
   } catch (err) {
     console.error('Error rejecting hackathon:', err);
+    logToSentry('Error rejecting hackathon', 'error', {
+      hackathonUrl: activeHackathon.base.url,
+      error: (err as Error).message,
+    });
     alert('Failed to reject hackathon ❌');
   }
 };
+
 
   if (activeHackathon) {
     const tabs = ['overview', 'prizes', ...(activeHackathon.speakers?.length ? ['speakers'] : []), 'schedule'];
@@ -172,37 +192,36 @@ const handleReject = async () => {
               <p><strong>Discord:</strong> <a href={activeHackathon.overview.discord}>{activeHackathon.overview.discord}</a></p>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-  <button
-    onClick={handleAccept}
-    style={{
-      padding: '0.75rem 1.5rem',
-      backgroundColor: '#7EC8E3',
-      color: '#0D1B2A',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      fontWeight: 'bold'
-    }}
-  >
-    ✅ Accept Hackathon
-  </button>
+                <button
+                  onClick={handleAccept}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: '#7EC8E3',
+                    color: '#0D1B2A',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ✅ Accept Hackathon
+                </button>
 
-  <button
-    onClick={handleReject}
-    style={{
-      padding: '0.75rem 1.5rem',
-      backgroundColor: '#E74C3C',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      fontWeight: 'bold'
-    }}
-  >
-    ❌ Reject Hackathon
-  </button>
-</div>
-
+                <button
+                  onClick={handleReject}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: '#E74C3C',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ❌ Reject Hackathon
+                </button>
+              </div>
             </div>
           )}
 

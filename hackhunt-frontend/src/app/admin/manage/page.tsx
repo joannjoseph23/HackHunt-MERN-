@@ -17,21 +17,24 @@ export default function ManagePage() {
   const router = useRouter();
 
   useEffect(() => {
-  fetch('/api/hackathons')
-    .then(res => {
-      if (!res.ok) throw new Error("Failed to fetch hackathons");
-      return res.json();
-    })
-    .then(data => setHackathons(data))
-    .catch(err => {
-      logToSentry("Failed to fetch hackathons", "error", { error: err.message });
-    });
-}, []);
+    fetch('/api/hackathons')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch hackathons');
+        return res.json();
+      })
+      .then(data => setHackathons(data))
+      .catch(err => {
+        logToSentry('Failed to fetch hackathons', 'error', {
+          error: err.message,
+        });
+      });
+  }, []);
 
   const handleDelete = async (url: string) => {
     if (!confirm('Are you sure you want to delete this hackathon?')) return;
 
-    try {logToSentry("Admin deleted hackathon", "info");
+    try {
+      logToSentry('Admin initiated hackathon delete', 'info', { hackathonUrl: url });
 
       await Promise.all([
         fetch(`/api/admin/delete/hackathons?url=${url}`, { method: 'DELETE' }),
@@ -42,9 +45,15 @@ export default function ManagePage() {
       ]);
 
       setHackathons(prev => prev.filter(h => h.url !== url));
+
+      logToSentry('Hackathon deleted successfully', 'info', { hackathonUrl: url });
       alert('Hackathon deleted.');
     } catch (err) {
       console.error(err);
+      logToSentry('Error deleting hackathon', 'error', {
+        hackathonUrl: url,
+        error: (err as Error).message,
+      });
       alert('Error deleting hackathon.');
     }
   };
