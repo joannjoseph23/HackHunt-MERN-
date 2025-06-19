@@ -107,34 +107,6 @@ export default function AdminNotifications() {
     }
   };
 
-const handleReject = async () => {
-  if (!activeHackathon) return;
-
-  const encodedUrl = encodeURIComponent(activeHackathon.base.url);
-
-  try {
-    await fetch(`/api/admin/delete/hackathon_request?url=${encodedUrl}`, {
-      method: 'DELETE',
-    });
-
-    logToSentry('Hackathon rejected by admin', 'info', {
-      hackathonUrl: activeHackathon.base.url,
-    });
-
-    alert('Hackathon Rejected ❌');
-    setPendingList((prev) => prev.filter((h) => h.url !== activeHackathon.base.url));
-    setActiveHackathon(null);
-  } catch (err) {
-    console.error('Error rejecting hackathon:', err);
-    logToSentry('Error rejecting hackathon', 'error', {
-      hackathonUrl: activeHackathon.base.url,
-      error: (err as Error).message,
-    });
-    alert('Failed to reject hackathon ❌');
-  }
-};
-
-
   if (activeHackathon) {
     const tabs = ['overview', 'prizes', ...(activeHackathon.speakers?.length ? ['speakers'] : []), 'schedule'];
 
@@ -201,25 +173,10 @@ const handleReject = async () => {
                     border: 'none',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
                   }}
                 >
                   ✅ Accept Hackathon
-                </button>
-
-                <button
-                  onClick={handleReject}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: '#E74C3C',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ❌ Reject Hackathon
                 </button>
               </div>
             </div>
