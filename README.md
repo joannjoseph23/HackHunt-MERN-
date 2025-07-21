@@ -1,47 +1,123 @@
-# 🚀 HackHunt
+🚀 HackHunt – Hackathon Builder & Organizer
+HackHunt is a full-stack platform built to create, manage, and discover hackathons effortlessly. Developed with the MERN stack and CI/CD best practices, it offers a seamless experience for both users and organizers.
 
-HackHunt is a web platform tailored for Indian college students to discover, filter, and register for upcoming hackathons. It also lets users set reminders so they don’t miss out on events they’re interested in.
 
----
+🛠️ Tech Stack
+Frontend: React (Next.js) + TypeScript
+Backend: Node.js (Express / Next.js API routes)
+Database: MongoDB Atlas
+CI/CD & Hosting: GitHub Actions + Docker + Render
+Monitoring: Prometheus, Sentry
+Testing: Jest (with coverage)
 
-## 🌟 Features
+🌟 Features
+🔐 User Authentication – Secure login/signup system.
 
-- 🧭 Browse a list of college-hosted hackathons
-- 🔍 Search by name
-- 📅 Filter by date
-- 🔗 One-click external registration
-- ⏰ Set custom reminders for events
-- 🌐 Fully deployed frontend and backend
-- 🔁 CI/CD pipeline with GitHub Actions
+🛠️ Admin Panel – Create and manage hackathons, prizes, schedules, and speakers. See notifications from applying candidates.
 
----
+🧠 Dynamic Forms – Interactive forms with validation for team and solo participants.
 
-## 🧑‍💻 Tech Stack
+📅 Event Countdown & Schedule – Real-time timers and timelines.
 
-### Frontend:
-- HTML, CSS, Vanilla JavaScript
+📊 Prometheus Monitoring – Backend metrics exposed via /api/metrics.
 
-### Backend:
-- Node.js
-- Express.js
-- REST API
+☁️ Dockerized Deployment – Build once, run anywhere.
 
-### DevSecOps:
-- GitHub Actions for CI (tests, linting, audit)
-- Render.com for backend deployment
+📸 Screenshots
+Home, Login, Admin Dashboard, Discover, Hackathon Detail, Application Form
 
----
+CI/CD Pipeline (GitHub Actions)
 
-## 🛠️ Project Structure
+Docker and Render deployments
 
-hackhunt/
-├── front-end/ # Static frontend
-│ └── index.html
-├── hackathon-backend/ # Express backend
-│ ├── index.js
-│ ├── hackathons.js
-│ ├── hackathons.test.js
-│ ├── package.json
-│ └── .github/workflows/ci.yml
+Prometheus metrics
 
+🚧 System Architecture
+CI/CD Pipeline
+Trigger: GitHub push/PR
+
+Steps:
+
+Lint & test using Jest
+
+Build Docker image
+
+Deploy to Render
+
+Monitor via Prometheus
+
+API Overview
+Method	Endpoint	Description
+POST	/api/hackathons	Create a hackathon
+GET	/api/hackathons	Fetch all hackathons
+GET	/api/hackathons/:id	Fetch a single hackathon
+POST	/api/reminders	Set a reminder
+GET	/api/metrics	Prometheus metrics endpoint
+
+🧪 Running Locally
+Prerequisites
+Node.js v18+
+MongoDB Atlas cluster
+Docker (optional, for containerized builds)
+
+Clone & Setup
+git clone https://github.com/yourusername/hackhunt.git
+cd hackhunt
+npm install
+cd src/app/api && npm install
+Env Config
+
+Create a .env.local with:
+env
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/hackhunt
+JWT_SECRET=your_jwt_secret
+Start Dev Server
+npm run dev
+
+🧪 Testing
+npm test
+Code coverage enabled via --coverage
+Tests include both unit and integration (Jest)
+
+🐳 Docker
+docker build -t hackhunt .
+docker run -p 3000:3000 hackhunt
+Multi-stage builds ensure lightweight containers for production.
+
+🚀 Deployment
+Auto-deployment is handled via GitHub Actions to Render:
+
+Push to main triggers:
+Tests
+Build
+Docker deployment
+
+📊 Monitoring
+Prometheus is integrated with:
+GET /api/metrics
+Monitors request count, latency, and system health.
+
+🔒 Security
+All secrets stored in .env.local
+Admin-only routes are JWT protected
+MongoDB access is IP-restricted
+HTTPS via Render SSL
+
+👥 Team
+Name	Role	Email
+Joann M. Joseph	Backend & DevOps Lead	joannjoseph23@gmail.com
+Nikhil S. Kallarakkal	Frontend Lead	nikhilseb23@gmail.com
+
+📌 License
+This project is licensed under the MIT License.
+
+🔗 References
+Next.js Docs
+MongoDB Atlas
+GitHub Actions
+Render Deployment
+Prometheus
+Jest
+React
+TailwindCSS
 
